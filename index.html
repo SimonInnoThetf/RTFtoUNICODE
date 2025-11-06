@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convertisseur Unicode pour Facebook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://github.com/SimonInnoThetf/RTFtoUNICODE/blob/main/images/logo-mrc.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .creator-info {
+            background: white;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 3px solid #667eea;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .creator-text {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .creator-text h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 8px;
+            font-family: 'Georgia', serif;
+            font-weight: 600;
+            font-style: italic;
+        }
+
+        .creator-text p {
+            color: #666;
+            margin: 3px 0;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .creator-text a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .creator-text a:hover {
+            text-decoration: underline;
+        }
+
+        .creator-logos {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo-item {
+            text-align: center;
+        }
+
+        .logo-item img {
+            max-height: 100px;
+            width: auto;
+            opacity: 0.9;
+        }
+
+        .logo-item p {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .method-section {
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .method-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .method-section p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .prompt-box {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .copy-prompt-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .copy-prompt-btn:hover {
+            background: #5568d3;
+        }
+
+        .steps-list {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .steps-list ol {
+            margin-left: 20px;
+        }
+
+        .steps-list li {
+            margin: 15px 0;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .steps-list strong {
+            color: #667eea;
+        }
+
+        .editor-section {
+            margin-bottom: 30px;
+        }
+
+        .editor-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .toolbar {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar button {
+            background: white;
+            border: 2px solid #667eea;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .toolbar button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .toolbar button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        #editor {
+            width: 100%;
+            min-height: 200px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 10px 10px;
+            font-size: 16px;
+            line-height: 1.6;
+            outline: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #output {
+            width: 100%;
+            min-height: 200px;
+            padding: 20px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 16px;
+            line-height: 1.6;
+            background: #f9f9f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #34a853;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d8e47;
+            transform: translateY(-2px);
+        }
+
+        .btn-clear {
+            background: #ea4335;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #c23321;
+            transform: translateY(-2px);
+        }
+
+        .instructions {
+            background: #e8f4f8;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #34a853;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Convertisseur Unicode pour Facebook</h1>
+            <p>Transformez votre texte formaté en Unicode stylisé</p>
+        </div>
+
+        <div class="creator-info">
+            <div class="creator-text">
+                <h2>Simon Kelley</h2>
+                <p><strong>Conseiller en Innovation et Transformation Numérique</strong></p>
+                <p>📧 <a href="mailto:innovation@regionthetford.com">innovation@regionthetford.com</a></p>
+                <p style="margin-top: 8px;"><strong>SOCIÉTÉ DE DÉVELOPPEMENT ÉCONOMIQUE DE LA RÉGION DE THETFORD (SDE)</strong></p>
+                <p>Espace entrepreneuriat région Thetford (E2RT) • 81, rue Notre-Dame Ouest, 2ᵉ étage • Thetford Mines (Québec) G6G 1J4</p>
+                <p>📞 Tél. 418 338-2188 poste 231#</p>
+            </div>
+            <div class="creator-logos">
+                <div class="logo-item">
+                    <img src="https://www.mrcdesappalaches.ca/fichiersUploadOpt/0-0-0-0-1619-914-285fce02f944bce76cd762bdfe398fca62194786843c12b1b/20250320141741-logomrctriangleentete.png" alt="MRC des Appalaches - Région de Thetford">
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('converter')">🔄 Convertisseur</button>
+                <button class="tab" onclick="switchTab('method')">🤖 Créez votre propre outil</button>
+            </div>
+
+            <div id="converter" class="tab-content active">
+            <div class="instructions">
+                <h3>📝 Instructions</h3>
+                <ul>
+                    <li>Collez votre texte mis en forme (de Word, Google Docs, etc.) dans l'éditeur</li>
+                    <li>Ou écrivez directement et utilisez les boutons pour mettre en forme</li>
+                    <li>Cliquez sur "Convertir" pour générer le texte Unicode</li>
+                    <li>Copiez le résultat et collez-le sur Facebook !</li>
+                </ul>
+            </div>
+
+            <div class="editor-section">
+                <h2>✍️ Votre texte</h2>
+                <div class="toolbar">
+                    <button onclick="formatText('bold')" title="Gras (Ctrl+B)"><b>G</b></button>
+                    <button onclick="formatText('italic')" title="Italique (Ctrl+I)"><i>I</i></button>
+                    <button onclick="formatText('underline')" title="Souligné (Ctrl+U)"><u>S</u></button>
+                </div>
+                <div id="editor" contenteditable="true" placeholder="Tapez ou collez votre texte ici..."></div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="convertToUnicode()">🔄 Convertir en Unicode</button>
+                <button class="btn btn-clear" onclick="clearAll()">🗑️ Effacer tout</button>
+            </div>
+
+            <div class="editor-section" style="margin-top: 30px;">
+                <h2>✨ Résultat Unicode</h2>
+                <textarea id="output" readonly placeholder="Le texte converti apparaîtra ici..."></textarea>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="copyToClipboard()">📋 Copier le résultat</button>
+                </div>
+            </div>
+            </div>
+
+            <div id="method" class="tab-content">
+                <div class="method-section">
+                    <h3>🤖 Comment cet outil a été créé avec Claude</h3>
+                    <p>Cet outil a été entièrement développé en quelques minutes grâce à l'intelligence artificielle Claude d'Anthropic. Voici comment :</p>
+                </div>
+
+                <div class="method-section">
+                    <h3>💬 Le prompt initial utilisé</h3>
+                    <div class="prompt-box">
+                        <button class="copy-prompt-btn" onclick="copyPrompt()">📋 Copier</button>
+                        <div id="promptText">Je veux utiliser un google app script pour coller dedans du texte mis en forme et le convertir en texte unicode pour les publications facebook. Je veux que le script puisse reconnaître le texte en gras, italique, souligné mais aussi la combinaison de ces différents styles et en appliquer le mapping adéquat. J'ai remarqué que le texte collé dans le google doc ne semble pas avoir les mêmes propriétés que celui écrit et mis en forme nativement dans le google doc. Porter attention à cela.</div>
+                    </div>
+                </div>
+
+                <div class="method-section">
+                    <h3>🔄 Les itérations et améliorations</h3>
+                    <p>Après le premier script, j'ai demandé plusieurs améliorations :</p>
+                    <div class="steps-list">
+                        <ol>
+                            <li><strong>Ajout des caractères accentués français</strong> : éÉ, àÀ, èÈ, ùÙ, îÎ, ôÔ, ûÛ, etc.</li>
+                            <li><strong>Support des listes et tableaux</strong> : Conversion des bullets points et structures tabulaires</li>
+                            <li><strong>Création d'une page web</strong> : Transformation en outil accessible à tous via internet</li>
+                            <li><strong>Amélioration de la mise en page</strong> : Préservation de la disposition originale du texte</li>
+                            <li><strong>Ajout des informations de créateur</strong> : Cette section que vous lisez actuellement !</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="method-section">
+                    <h3>✨ Pourquoi c'est impressionnant</h3>
+                    <p><strong>Sans aucune connaissance en programmation</strong>, j'ai pu créer un outil fonctionnel et professionnel en quelques minutes simplement en discutant avec Claude en langage naturel.</p>
+                    <p><strong>Temps total de développement :</strong> Environ 30 minutes incluant tous les ajustements et améliorations.</p>
+                    <p><strong>Code écrit manuellement :</strong> 0 ligne ! Tout a été généré par Claude.</p>
+                </div>
+
+                <div class="method-section">
+                    <h3>🚀 Créez vos propres outils !</h3>
+                    <p>Vous aussi pouvez créer des outils personnalisés pour votre entreprise :</p>
+                    <div class="steps-list">
+                        <ol>
+                            <li><strong>Identifiez un besoin</strong> : Une tâche répétitive ou un processus à automatiser</li>
+                            <li><strong>Décrivez-le simplement</strong> : Expliquez ce que vous voulez à Claude en français</li>
+                            <li><strong>Itérez et améliorez</strong> : Demandez des ajustements jusqu'à ce que ce soit parfait</li>
+                            <li><strong>Déployez</strong> : Utilisez l'outil ou partagez-le avec votre équipe</li>
+                        </ol>
+                    </div>
+                    <p style="margin-top: 20px;"><strong>💡 Intéressé par la transformation numérique de votre entreprise ?</strong><br>
+                    Contactez Simon Kelley pour découvrir comment l'IA peut optimiser vos processus d'affaires.</p>
+                </div>
+
+                <div class="method-section" style="background: #e8f5e9; border-left-color: #4caf50;">
+                    <h3>🤝 Partagez votre création avec la communauté !</h3>
+                    <p>Vous avez créé un outil utile ? <strong>Partagez-le avec la communauté !</strong></p>
+                    <p>Tout comme cet outil de conversion Unicode, vos créations peuvent aider d'autres entrepreneurs et professionnels à augmenter leur productivité.</p>
+                    <p style="margin-top: 15px;"><strong>Comment partager :</strong></p>
+                    <div class="steps-list">
+                        <ul style="list-style-type: none; margin-left: 0;">
+                            <li>📧 Envoyez votre outil à <a href="mailto:innovation@regionthetford.com">innovation@regionthetford.com</a></li>
+                            <li>📝 Décrivez brièvement à quoi il sert</li>
+                            <li>🎯 Expliquez le problème qu'il résout</li>
+                        </ul>
+                    </div>
+                    <p style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px; font-weight: bold; color: #4caf50;">
+                        💚 Ensemble, construisons une bibliothèque d'outils gratuits pour améliorer la productivité de toute la communauté entrepreneuriale !
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Tables de conversion Unicode
+        const UNICODE_MAPS = {
+            bold: {
+                'A': '𝗔', 'B': '𝗕', 'C': '𝗖', 'D': '𝗗', 'E': '𝗘', 'F': '𝗙', 'G': '𝗚', 'H': '𝗛', 'I': '𝗜', 'J': '𝗝',
+                'K': '𝗞', 'L': '𝗟', 'M': '𝗠', 'N': '𝗡', 'O': '𝗢', 'P': '𝗣', 'Q': '𝗤', 'R': '𝗥', 'S': '𝗦', 'T': '𝗧',
+                'U': '𝗨', 'V': '𝗩', 'W': '𝗪', 'X': '𝗫', 'Y': '𝗬', 'Z': '𝗭',
+                'a': '𝗮', 'b': '𝗯', 'c': '𝗰', 'd': '𝗱', 'e': '𝗲', 'f': '𝗳', 'g': '𝗴', 'h': '𝗵', 'i': '𝗶', 'j': '𝗷',
+                'k': '𝗸', 'l': '𝗹', 'm': '𝗺', 'n': '𝗻', 'o': '𝗼', 'p': '𝗽', 'q': '𝗾', 'r': '𝗿', 's': '𝘀', 't': '𝘁',
+                'u': '𝘂', 'v': '𝘃', 'w': '𝘄', 'x': '𝘅', 'y': '𝘆', 'z': '𝘇',
+                '0': '𝟬', '1': '𝟭', '2': '𝟮', '3': '𝟯', '4': '𝟰', '5': '𝟱', '6': '𝟲', '7': '𝟳', '8': '𝟴', '9': '𝟵',
+                'é': '𝗲́', 'É': '𝗘́', 'è': '𝗲̀', 'È': '𝗘̀', 'ê': '𝗲̂', 'Ê': '𝗘̂',
+                'à': '𝗮̀', 'À': '𝗔̀', 'â': '𝗮̂', 'Â': '𝗔̂',
+                'ù': '𝘂̀', 'Ù': '𝗨̀', 'û': '𝘂̂', 'Û': '𝗨̂',
+                'î': '𝗶̂', 'Î': '𝗜̂', 'ï': '𝗶̈', 'Ï': '𝗜̈',
+                'ô': '𝗼̂', 'Ô': '𝗢̂', 'ç': '𝗰̧', 'Ç': '𝗖̧',
+                'ë': '𝗲̈', 'Ë': '𝗘̈', 'ÿ': '𝘆̈', 'Ÿ': '𝗬̈'
+            },
+            italic: {
+                'A': '𝘈', 'B': '𝘉', 'C': '𝘊', 'D': '𝘋', 'E': '𝘌', 'F': '𝘍', 'G': '𝘎', 'H': '𝘏', 'I': '𝘐', 'J': '𝘑',
+                'K': '𝘒', 'L': '𝘓', 'M': '𝘔', 'N': '𝘕', 'O': '𝘖', 'P': '𝘗', 'Q': '𝘘', 'R': '𝘙', 'S': '𝘚', 'T': '𝘛',
+                'U': '𝘜', 'V': '𝘝', 'W': '𝘞', 'X': '𝘟', 'Y': '𝘠', 'Z': '𝘡',
+                'a': '𝘢', 'b': '𝘣', 'c': '𝘤', 'd': '𝘥', 'e': '𝘦', 'f': '𝘧', 'g': '𝘨', 'h': '𝘩', 'i': '𝘪', 'j': '𝘫',
+                'k': '𝘬', 'l': '𝘭', 'm': '𝘮', 'n': '𝘯', 'o': '𝘰', 'p': '𝘱', 'q': '𝘲', 'r': '𝘳', 's': '𝘴', 't': '𝘵',
+                'u': '𝘶', 'v': '𝘷', 'w': '𝘸', 'x': '𝘹', 'y': '𝘺', 'z': '𝘻',
+                'é': '𝘦́', 'É': '𝘌́', 'è': '𝘦̀', 'È': '𝘌̀', 'ê': '𝘦̂', 'Ê': '𝘌̂',
+                'à': '𝘢̀', 'À': '𝘈̀', 'â': '𝘢̂', 'Â': '𝘈̂',
+                'ù': '𝘶̀', 'Ù': '𝘜̀', 'û': '𝘶̂', 'Û': '𝘜̂',
+                'î': '𝘪̂', 'Î': '𝘐̂', 'ï': '𝘪̈', 'Ï': '𝘐̈',
+                'ô': '𝘰̂', 'Ô': '𝘖̂', 'ç': '𝘤̧', 'Ç': '𝘊̧',
+                'ë': '𝘦̈', 'Ë': '𝘌̈', 'ÿ': '𝘺̈', 'Ÿ': '𝘠̈'
+            },
+            boldItalic: {
+                'A': '𝘼', 'B': '𝘽', 'C': '𝘾', 'D': '𝘿', 'E': '𝙀', 'F': '𝙁', 'G': '𝙂', 'H': '𝙃', 'I': '𝙄', 'J': '𝙅',
+                'K': '𝙆', 'L': '𝙇', 'M': '𝙈', 'N': '𝙉', 'O': '𝙊', 'P': '𝙋', 'Q': '𝙌', 'R': '𝙍', 'S': '𝙎', 'T': '𝙏',
+                'U': '𝙐', 'V': '𝙑', 'W': '𝙒', 'X': '𝙓', 'Y': '𝙔', 'Z': '𝙕',
+                'a': '𝙖', 'b': '𝙗', 'c': '𝙘', 'd': '𝙙', 'e': '𝙚', 'f': '𝙛', 'g': '𝙜', 'h': '𝙝', 'i': '𝙞', 'j': '𝙟',
+                'k': '𝙠', 'l': '𝙡', 'm': '𝙢', 'n': '𝙣', 'o': '𝙤', 'p': '𝙥', 'q': '𝙦', 'r': '𝙧', 's': '𝙨', 't': '𝙩',
+                'u': '𝙪', 'v': '𝙫', 'w': '𝙬', 'x': '𝙭', 'y': '𝙮', 'z': '𝙯',
+                'é': '𝙚́', 'É': '𝙀́', 'è': '𝙚̀', 'È': '𝙀̀', 'ê': '𝙚̂', 'Ê': '𝙀̂',
+                'à': '𝙖̀', 'À': '𝘼̀', 'â': '𝙖̂', 'Â': '𝘼̂',
+                'ù': '𝙪̀', 'Ù': '𝙐̀', 'û': '𝙪̂', 'Û': '𝙐̂',
+                'î': '𝙞̂', 'Î': '𝙄̂', 'ï': '𝙞̈', 'Ï': '𝙄̈',
+                'ô': '𝙤̂', 'Ô': '𝙊̂', 'ç': '𝙘̧', 'Ç': '𝘾̧',
+                'ë': '𝙚̈', 'Ë': '𝙀̈', 'ÿ': '𝙮̈', 'Ÿ': '𝙔̈'
+            },
+            underline: '\u0332'
+        };
+
+        function formatText(command) {
+            document.execCommand(command, false, null);
+        }
+
+        function convertChar(char, isBold, isItalic, isUnderline) {
+            const isConvertible = /[A-Za-z0-9éÉèÈêÊàÀâÂùÙûÛîÎïÏôÔçÇëËÿŸ]/.test(char);
+            
+            if (!isConvertible) {
+                return isUnderline && !isBold && !isItalic ? char + UNICODE_MAPS.underline : char;
+            }
+
+            let converted = char;
+
+            if (isBold && isItalic && isUnderline) {
+                converted = UNICODE_MAPS.boldItalic[char] || char;
+                return converted + UNICODE_MAPS.underline;
+            }
+            if (isBold && isItalic) return UNICODE_MAPS.boldItalic[char] || char;
+            if (isBold && isUnderline) {
+                converted = UNICODE_MAPS.bold[char] || char;
+                return converted + UNICODE_MAPS.underline;
+            }
+            if (isItalic && isUnderline) {
+                converted = UNICODE_MAPS.italic[char] || char;
+                return converted + UNICODE_MAPS.underline;
+            }
+            if (isBold) return UNICODE_MAPS.bold[char] || char;
+            if (isItalic) return UNICODE_MAPS.italic[char] || char;
+            if (isUnderline) return char + UNICODE_MAPS.underline;
+
+            return char;
+        }
+
+        function processNode(node) {
+            let result = '';
+            
+            if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.textContent;
+                const parent = node.parentElement;
+                
+                let isBold = false;
+                let isItalic = false;
+                let isUnderline = false;
+                
+                let element = parent;
+                while (element && element.id !== 'editor') {
+                    const style = window.getComputedStyle(element);
+                    const tagName = element.tagName.toLowerCase();
+                    
+                    if (tagName === 'b' || tagName === 'strong' || parseInt(style.fontWeight) >= 700) {
+                        isBold = true;
+                    }
+                    if (tagName === 'i' || tagName === 'em' || style.fontStyle === 'italic') {
+                        isItalic = true;
+                    }
+                    if (tagName === 'u' || style.textDecoration.includes('underline')) {
+                        isUnderline = true;
+                    }
+                    
+                    element = element.parentElement;
+                }
+                
+                for (let char of text) {
+                    result += convertChar(char, isBold, isItalic, isUnderline);
+                }
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const tagName = node.tagName.toLowerCase();
+                
+                // Gérer les sauts de ligne
+                if (tagName === 'br') {
+                    result += '\n';
+                    return result;
+                }
+                
+                // Gérer les paragraphes et divs
+                if (tagName === 'div' || tagName === 'p') {
+                    // Ajouter un saut de ligne avant si on a déjà du contenu
+                    if (result.length > 0 && !result.endsWith('\n\n')) {
+                        result += '\n';
+                    }
+                }
+                
+                // Gérer les listes
+                if (tagName === 'ul' || tagName === 'ol') {
+                    if (result.length > 0 && !result.endsWith('\n')) {
+                        result += '\n';
+                    }
+                }
+                
+                if (tagName === 'li') {
+                    // Ajouter la puce pour les listes
+                    result += '• ';
+                }
+                
+                // Traiter les enfants
+                for (let child of node.childNodes) {
+                    result += processNode(child);
+                }
+                
+                // Ajouter un saut de ligne après certains éléments
+                if (tagName === 'div' || tagName === 'p' || tagName === 'li') {
+                    if (!result.endsWith('\n')) {
+                        result += '\n';
+                    }
+                }
+                
+                if (tagName === 'ul' || tagName === 'ol') {
+                    if (!result.endsWith('\n')) {
+                        result += '\n';
+                    }
+                }
+            }
+            
+            return result;
+        }
+
+        function convertToUnicode() {
+            const editor = document.getElementById('editor');
+            const output = document.getElementById('output');
+            
+            let result = '';
+            for (let child of editor.childNodes) {
+                result += processNode(child);
+            }
+            
+            // Nettoyer les lignes vides multiples (max 2 consécutives)
+            result = result.replace(/\n{3,}/g, '\n\n');
+            
+            output.value = result.trim();
+            showToast('✅ Texte converti avec succès !');
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('output');
+            output.select();
+            document.execCommand('copy');
+            showToast('📋 Texte copié dans le presse-papier !');
+        }
+
+        function clearAll() {
+            document.getElementById('editor').innerHTML = '';
+            document.getElementById('output').value = '';
+            showToast('🗑️ Tout a été effacé !');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function switchTab(tabName) {
+            // Désactiver tous les onglets et contenus
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Activer l'onglet et le contenu sélectionnés
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function copyPrompt() {
+            const promptText = document.getElementById('promptText').textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                showToast('📋 Prompt copié dans le presse-papier !');
+            });
+        }
+
+        // Raccourcis clavier
+        document.getElementById('editor').addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'b') {
+                    e.preventDefault();
+                    formatText('bold');
+                } else if (e.key === 'i') {
+                    e.preventDefault();
+                    formatText('italic');
+                } else if (e.key === 'u') {
+                    e.preventDefault();
+                    formatText('underline');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
